@@ -2,9 +2,20 @@
 #define _CS_RUNTIME_H_
 
 #include <CL/cl.h>
+#include <string>
 #include <list>
 
+#define CL_CALL(x) { \
+        x; \
+        if(status != CL_SUCCESS) \
+            throw status; \
+    }
+
 namespace clscript{
+
+using namespace std;
+
+string CSGetErrorMsg(int err);
 
 typedef enum{
     CS_DEV_CPU = CL_DEVICE_TYPE_CPU,

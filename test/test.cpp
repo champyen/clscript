@@ -17,7 +17,7 @@ int main(int argc, char **argv)
         return -1;
     }
     CSLib lib(&runtime, (const char*)(argv[1]));
-    CSBuffer buf(&runtime, 4096);
+    CSBuffer buf(&runtime, 4096*sizeof(cl_int));
     CSWorkSize gWS(4096);
     lib.exec("test", gWS, NullWorkSize, 0, &buf);
 

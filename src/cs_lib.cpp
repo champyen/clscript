@@ -41,29 +41,29 @@ CSLib::CSLib(CSRuntime *runtime, int files, const char **fileName, const char *b
         fclose(fp);
     }
 
-    mProg = clCreateProgramWithSource(runtime->mCtx, files, (const char**)src, flen, &status);
-    status = clBuildProgram(mProg, 1, &(runtime->mDev), NULL, NULL, NULL);
+    CL_CALL(mProg = clCreateProgramWithSource(runtime->mCtx, files, (const char**)src, flen, &status));
+    CL_CALL(status = clBuildProgram(mProg, 1, &(runtime->mDev), NULL, NULL, NULL));
 
-    status = clCreateKernelsInProgram(mProg, 0, NULL, &mNumKernels);
+    CL_CALL(status = clCreateKernelsInProgram(mProg, 0, NULL, &mNumKernels));
     cout << __func__ << ": " << mNumKernels << endl;
     if(mNumKernels){
         mKernels = new CSKernel[mNumKernels];
         cl_kernel *kernels = new cl_kernel[mNumKernels];
-        status = clCreateKernelsInProgram(mProg, mNumKernels, kernels, NULL);
+        CL_CALL(status = clCreateKernelsInProgram(mProg, mNumKernels, kernels, NULL));
         for(int i = 0; i < mNumKernels; i++){
             char strbuf[1024];
             size_t retlen;
             mKernels[i].kernel = kernels[i];
-            clGetKernelInfo(kernels[i], CL_KERNEL_FUNCTION_NAME, 1024, strbuf, &retlen);
+            CL_CALL(status = clGetKernelInfo(kernels[i], CL_KERNEL_FUNCTION_NAME, 1024, strbuf, &retlen));
             mIdxMap[strbuf] = i;
             printf("%s kernel[%s] - idx[%d, %d, %d] \n", __func__, strbuf, i, mIdxMap[string(strbuf)], strlen(strbuf));
 
-            clGetKernelInfo(kernels[i], CL_KERNEL_NUM_ARGS, sizeof(cl_uint), &(mKernels[i].numArgs), &retlen);
+            CL_CALL(status = clGetKernelInfo(kernels[i], CL_KERNEL_NUM_ARGS, sizeof(cl_uint), &(mKernels[i].numArgs), &retlen));
             mKernels[i].argType = new cl_uint[mKernels[i].numArgs];
             cout << __func__ << ": create kernel - " << strbuf << ", # of args - " << mKernels[i].numArgs << endl; 
 
             for(int j = 0; j < mKernels[i].numArgs; j++){
-                clGetKernelArgInfo(kernels[i], j, CL_KERNEL_ARG_TYPE_NAME, 1024, strbuf, &retlen);
+                CL_CALL(status = clGetKernelArgInfo(kernels[i], j, CL_KERNEL_ARG_TYPE_NAME, 1024, strbuf, &retlen));
                 cout << "arg[" << j << "] - " << strbuf << endl ;
                 
                 char *bptr = NULL;
@@ -108,11 +108,12 @@ CSLib::CSLib(CSRuntime *runtime, int files, const char **fileName, const char *b
 
 CSLib::~CSLib()
 {
+    cl_int status;
     for(int i = 0; i < mNumKernels; i++){
         delete mKernels[i].argType;
-        clReleaseKernel(mKernels[i].kernel);
+        CL_CALL(status = clReleaseKernel(mKernels[i].kernel));
     }
-    clReleaseProgram(mProg);
+    CL_CALL(status = clReleaseProgram(mProg));
     if(mKernels)
         delete mKernels;
 }
@@ -120,13 +121,13 @@ CSLib::~CSLib()
 #define CS_ARG_CASE2( argType, clType, vaType) \
                 case argType: { \
                     clType v = va_arg(ap, vaType); \
-                    clSetKernelArg(kernel, i, sizeof(clType), &v); \
+                    CL_CALL(status = clSetKernelArg(kernel, i, sizeof(clType), &v)); \
                 } break;
 
 #define CS_ARG_CASE( argType, clType) \
                 case argType: { \
                     clType v = va_arg(ap, clType); \
-                    clSetKernelArg(kernel, i, sizeof(clType), &v); \
+                    CL_CALL(status = clSetKernelArg(kernel, i, sizeof(clType), &v)); \
                 } break;
 
 #define CS_ARG_VEC( argType, clType ) \
@@ -164,14 +165,14 @@ int CSLib::exec(const char *kName, CSWorkSize &gWS, CSWorkSize &lWS, ...)
 
                 case CS_BUF: {
                     CSBuffer *v = va_arg(ap, CSBuffer*);
-                    clSetKernelArg(kernel, i, sizeof(cl_mem), &(v->mBuf));
+                    CL_CALL(status = clSetKernelArg(kernel, i, sizeof(cl_mem), &(v->mBuf)));
                     bufList.push_back(v);
                 } break;
             }
         }
         va_end(ap);
         
-        status = clEnqueueNDRangeKernel(mRuntime->mQueue, kernel, gWS.mDim, NULL, gWS.mWorkSize, (lWS.mDim ? lWS.mWorkSize : NULL), 0, NULL, NULL);
+        CL_CALL(status = clEnqueueNDRangeKernel(mRuntime->mQueue, kernel, gWS.mDim, NULL, gWS.mWorkSize, (lWS.mDim ? lWS.mWorkSize : NULL), 0, NULL, NULL));
 
         for (list<CSBuffer*>::iterator i = bufList.begin(); i != bufList.end (); i++)
             (*i)->sync();
@@ -191,15 +192,15 @@ int CSLib::exec(const char *kName, CSWorkSize &gWS, CSWorkSize &lWS, CSArg *args
         for(int i = 0; i < mKernels[idx].numArgs; i++){
             if(mKernels[idx].argType[i] == CS_BUF){
                 CSBuffer *buf = (CSBuffer*)(args[i].argVal);
-                status = clSetKernelArg(kernel, i, sizeof(cl_mem), &(buf->mBuf));
+                CL_CALL(status = clSetKernelArg(kernel, i, sizeof(cl_mem), &(buf->mBuf)));
                 bufList.push_back(buf);
             }else{
                 cl_int val = *((cl_int*)args[i].argVal);
-                status = clSetKernelArg(kernel, i, args[i].argSize, args[i].argVal);
+                CL_CALL(status = clSetKernelArg(kernel, i, args[i].argSize, args[i].argVal));
             }
         }
 
-        status = clEnqueueNDRangeKernel(mRuntime->mQueue, kernel, gWS.mDim, NULL, gWS.mWorkSize, (lWS.mDim ? lWS.mWorkSize : NULL), 0, NULL, NULL);
+        CL_CALL(status = clEnqueueNDRangeKernel(mRuntime->mQueue, kernel, gWS.mDim, NULL, gWS.mWorkSize, (lWS.mDim ? lWS.mWorkSize : NULL), 0, NULL, NULL));
 
         for (list<CSBuffer*>::iterator i = bufList.begin(); i != bufList.end (); i++)
             (*i)->sync();
