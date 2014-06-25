@@ -56,7 +56,7 @@ CSLib::CSLib(CSRuntime *runtime, int files, const char **fileName, const char *b
             mKernels[i].kernel = kernels[i];
             CL_CALL(status = clGetKernelInfo(kernels[i], CL_KERNEL_FUNCTION_NAME, 1024, strbuf, &retlen));
             mIdxMap[strbuf] = i;
-            printf("%s kernel[%s] - idx[%d, %d, %d] \n", __func__, strbuf, i, mIdxMap[string(strbuf)], strlen(strbuf));
+            printf("%s kernel[%s] - idx[%d, %d] \n", __func__, strbuf, i, mIdxMap[string(strbuf)]);
 
             CL_CALL(status = clGetKernelInfo(kernels[i], CL_KERNEL_NUM_ARGS, sizeof(cl_uint), &(mKernels[i].numArgs), &retlen));
             mKernels[i].argType = new cl_uint[mKernels[i].numArgs];

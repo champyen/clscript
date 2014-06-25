@@ -23,7 +23,7 @@ int main(int argc, char **argv)
         CSBuffer buf(&runtime, 4096*sizeof(cl_int));
         CSWorkSize gWS(4096);
         printf("%s buf %p\n", __func__, &buf);
-        lib.exec("test", gWS, NullWorkSize, 0, &buf);
+        lib.exec("test", gWS, NullWorkSize, 2, &buf);
     }catch(cl_int err){
         cout << argv[0] << " error: " << CSGetErrorMsg(err) << endl;
     }

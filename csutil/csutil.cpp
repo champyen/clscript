@@ -40,7 +40,31 @@ int main(int argc, char **argv)
         }
 
         //load CL file
-        CSLib lib(&runtime, (const char*)(argv[1]));
+        const char **fileNames;
+        int fcnt = 1;
+        {
+            char *fileStr = argv[1];
+            while(fileStr){
+                fileStr = strchr(fileStr, ',');
+                if(fileStr){
+                    fileStr++;
+                    fcnt++;
+                }
+            }
+            fileNames = new const char*[fcnt];
+            
+            fileStr = argv[1];
+            for(int i = 0; i < fcnt; i++){
+                char* fName = fileStr;
+                fileStr = strchr(fileStr, ',');
+                if(fileStr){
+                    *fileStr = 0;
+                    fileStr++;
+                }
+                fileNames[i] = fName;
+            }
+        }
+        CSLib lib(&runtime, fcnt, fileNames);
 
         //parse worksize info
         char *wsStr = argv[3];
