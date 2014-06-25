@@ -149,16 +149,16 @@ int CSLib::exec(const char *kName, CSWorkSize &gWS, CSWorkSize &lWS, ...)
 
         va_start(ap, lWS);
 
-        for(int i; i < mKernels[idx].numArgs; i++){
+        for(int i = 0; i < mKernels[idx].numArgs; i++){
             switch(mKernels[idx].argType[i]){
                 CS_ARG_CASE(CS_INT, cl_int);
                 CS_ARG_VEC(CS_INT, cl_int);
 
-                CS_ARG_CASE2(CS_FLOAT, cl_float, cl_double);
-                CS_ARG_VEC(CS_FLOAT, cl_float);
-
                 CS_ARG_CASE(CS_LONG, cl_long);
                 CS_ARG_VEC(CS_LONG, cl_long);
+
+                CS_ARG_CASE2(CS_FLOAT, cl_float, cl_double);
+                CS_ARG_VEC(CS_FLOAT, cl_float);
 
                 CS_ARG_CASE(CS_DOUBLE, cl_double);
                 CS_ARG_VEC(CS_DOUBLE, cl_double);
