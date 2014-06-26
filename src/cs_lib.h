@@ -6,11 +6,12 @@
 #include <string>
 #include <map>
 
-using namespace std;
-
 #define CS_MAX_ARGS    32
 
 namespace clscript{
+
+using namespace std;
+
 typedef enum{
     CS_CHAR = 0x00,
     CS_CHAR2 = 0x02,

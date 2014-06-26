@@ -61,4 +61,6 @@ csutil only can be used with parameters in order.
                                      buffer.
 
 For example, you can try csutil with test.cl by the following command:
-    ./csutil test.cl test 4096 i:2 b:sz=16384,of=out.bin              
+
+    csutil test.cl test 4096 i:2 b:sz=16384,of=out.bin              
+

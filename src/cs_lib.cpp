@@ -30,15 +30,19 @@ CSLib::CSLib(CSRuntime *runtime, int files, const char **fileName, const char *b
         cout << "read file: " << fileName[i] << endl;
 
         FILE *fp = fopen(fileName[i], "r");
-        fseek(fp, 0L, SEEK_END);
-        flen[i] = ftell(fp);
-        cout << fileName[i] << " size: " << flen[i] << endl;
+        if(fp){
+            fseek(fp, 0L, SEEK_END);
+            flen[i] = ftell(fp);
+            cout << fileName[i] << " size: " << flen[i] << endl;
 
-        fseek(fp, 0L, SEEK_SET);
-        src[i] = new char[flen[i]];
-        fread(src[i], flen[i], 1, fp); 
+            fseek(fp, 0L, SEEK_SET);
+            src[i] = new char[flen[i]];
+            fread(src[i], flen[i], 1, fp); 
 
-        fclose(fp);
+            fclose(fp);
+        }else{
+            throw std::invalid_argument(fileName[i]);
+        }
     }
 
     CL_CALL(mProg = clCreateProgramWithSource(runtime->mCtx, files, (const char**)src, flen, &status));
@@ -103,6 +107,8 @@ CSLib::CSLib(CSRuntime *runtime, int files, const char **fileName, const char *b
     }
     printf("%s idx[%d] \n", __func__, mIdxMap[string("test")]);
 
+    for(int i = 0; i < files; i++)
+        delete src[i];
     delete src;
 }
 

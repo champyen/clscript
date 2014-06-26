@@ -199,7 +199,9 @@ int main(int argc, char **argv)
         RELEASE_ARG(float, floatList);
         RELEASE_ARG(double, doubleList);
     } catch (cl_int err) {
-        cout << "error:" << CSGetErrorMsg(err) << endl;
+        cout << "OpenCL error: " << CSGetErrorMsg(err) << endl;
+    } catch (std::invalid_argument e) {
+        cout << "error: " << e.what() << endl;
     }
 
     return 0;

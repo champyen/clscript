@@ -87,7 +87,7 @@ string CSGetErrorMsg(int err)
 {
     int idx = -err;
     if(idx > 68 || idx < 0)
-        return string(CSErrorMsg[68]);
+        return string(CSErrorMsg[69]);
     else
         return string(CSErrorMsg[idx]);
 }
